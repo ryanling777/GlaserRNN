@@ -10,15 +10,19 @@ from .modules import ModelOutput
 mse = nn.MSELoss()
 
 class MSEOnlyLoss(nn.Module):
+    def __init__(self,
+                 excluded_outputs: list[str]):
+        super().__init__()
+        self.excluded_outputs = excluded_outputs
+        
     def forward(self,
                 model_outputs: dict[str, Union[np.ndarray, torch.Tensor]],
                 target_outputs: dict[str, np.ndarray],
-                masks: dict[str, Union[np.ndarray, torch.Tensor]],
-                excluded_outputs: list[str]):
+                masks: dict[str, Union[np.ndarray, torch.Tensor]]):
 
         error = 0.
         for output_name in target_outputs.keys():
-            if output_name in excluded_outputs:
+            if output_name in self.excluded_outputs:
                 continue
 
             mask = masks.get(output_name,
