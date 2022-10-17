@@ -134,3 +134,6 @@ class ModelOutput:
 
     #def __getitem__(self, item):
     #    return self.as_tensor()[item]
+
+    def __getattr__(self, name):
+        return getattr(self.as_tensor(), name)
