@@ -8,8 +8,6 @@ from .tasks import Task
 
 from tqdm.auto import tqdm
 
-# TODO why not have this as the default output of the task?
-# it's kind of nice that the batch output is a couple of lists
 def get_batch_of_trials(task, rnn):
     """
     Get a batch of trials from the task and convert it to a format the RNN can process.
@@ -48,7 +46,8 @@ def train(
         optimizer: torch.optim.Optimizer = None,
         test_loss_fn = None,
         clipgrad: float = 1.,
-        pbar: bool = True):
+        pbar: bool = True
+):
     """
     Train rnn on task
     

@@ -7,7 +7,6 @@ from .modules import RNNModule, ModelOutput
 class MultiRegionRNN(nn.Module):
     def __init__(self,
                  input_dim: int,
-                 #outputs: list[ModelOutput],
                  outputs: dict[str, int],
                  alpha: float,
                  nonlin: callable,

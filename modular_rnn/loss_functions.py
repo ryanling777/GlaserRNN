@@ -4,7 +4,7 @@ import numpy as np
 import torch.nn as nn
 import torch
 
-from .models import ModelOutput
+from .modules import ModelOutput
 
 
 mse = nn.MSELoss()

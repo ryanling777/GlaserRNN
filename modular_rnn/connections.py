@@ -14,7 +14,7 @@ class ConnectionConfig:
     rank: Union[int, str] = 'full'
     p_conn: float = 1.
     train_weights: bool = True
-    mask: np.ndarray = None # for masking input lines such as go cue
+    mask: torch.Tensor = None # for masking input lines such as go cue
 
     @property
     def weight_name(self):
