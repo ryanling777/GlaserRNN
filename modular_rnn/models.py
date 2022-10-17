@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 
-from modular_rnn.connections import ConnectionConfig, Connection
-from modular_rnn.modules import RNNModule, ModelOutput
+from .connections import ConnectionConfig, Connection
+from .modules import RNNModule, ModelOutput
 
 class MultiRegionRNN(nn.Module):
     def __init__(self,

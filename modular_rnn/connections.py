@@ -5,7 +5,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from modular_rnn.utils import glorot_gauss_tensor
+from .utils import glorot_gauss_tensor
 
 @dataclass
 class ConnectionConfig:
