@@ -88,7 +88,8 @@ class RNNModule(nn.Module):
         return torch.stack(self.hidden_states).squeeze()
 
 
-    def get_rates_tensor(self) -> torch.Tensor:
+    @property
+    def rates_tensor(self) -> torch.Tensor:
         return torch.stack(self.rates).squeeze()
 
 

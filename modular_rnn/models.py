@@ -118,11 +118,7 @@ class MultiRegionRNN(nn.Module):
             for c in self.output_connections:
                 self.outputs[c.target_name].values.append(self.regions[c.source_name].rates[t] @ c.effective_W.T)
             
-        # TODO return the rates as well?
-
-        # might want to return a dict
-        #return (output.as_tensor() for output in self.outputs.values())
-        return self.outputs, {region.name : region.rates for region in self.regions.values()}
+        return self.outputs, {region.name : region.rates_tensor for region in self.regions.values()}
     
     
     def parameters(self):
