@@ -1,5 +1,6 @@
 # based on PsychRNN
 import numpy as np
+import scipy.stats
 
 from abc import ABC, abstractmethod
 from .reach_profile import extent_curve, speed_curve
@@ -240,6 +241,8 @@ class CossinUncertaintyTaskWithReachProfiles(Task):
         cue_kappa = np.random.choice(self.cue_kappas)
         params['cue_kappa'] = cue_kappa
         params['cue_slice_locations'] = np.sort(np.random.vonmises(mu = target_dir, kappa = cue_kappa, size = self.N_in // 2))
+        params['cue_var'] = scipy.stats.circvar(params['cue_slice_locations'])
+        params['cue_var_log'] = np.log(params['cue_var'])
         
         params['idx_trial_start'] = 50
         params['idx_target_on']   = params['idx_trial_start'] + np.random.randint(50, 200)
@@ -284,6 +287,8 @@ class CossinUncertaintyTaskWithReachProfiles(Task):
         else:
             masks_t['hand'] = np.zeros(self.output_dims['hand'])
             
+        outputs_t['uncertainty'] = params['cue_var_log']
+        masks_t['uncertainty'] = 1.
 
         return input_signal, outputs_t, masks_t
 
