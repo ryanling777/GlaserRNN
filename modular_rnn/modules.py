@@ -85,12 +85,12 @@ class RNNModule(nn.Module):
 
 
     def get_hidden_states_tensor(self) -> torch.Tensor:
-        return torch.stack(self.hidden_states).squeeze()
+        return torch.stack(self.hidden_states, dim = 1).squeeze(dim = 0)
 
 
     @property
     def rates_tensor(self) -> torch.Tensor:
-        return torch.stack(self.rates).squeeze()
+        return torch.stack(self.rates, dim = 1).squeeze(dim = 0)
 
 
     def glorot_gauss_init(self) -> None:
@@ -130,7 +130,7 @@ class ModelOutput:
         self.values = [torch.zeros(1, batch_size, self.dim)]
         
     def as_tensor(self):
-        return torch.stack(self.values).squeeze()
+        return torch.stack(self.values, dim = 1).squeeze(dim = 0)
 
     #def __getitem__(self, item):
     #    return self.as_tensor()[item]
