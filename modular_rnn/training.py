@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 
 from .models import MultiRegionRNN
-from .tasks import Task
+from .tasks.base_task import Task
 
 from tqdm.auto import tqdm
 
