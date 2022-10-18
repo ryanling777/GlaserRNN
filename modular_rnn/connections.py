@@ -13,7 +13,9 @@ class ConnectionConfig:
     target_name: str
     rank: Union[int, str] = 'full'
     p_conn: float = 1.
-    train_weights: bool = True
+    norm: Union[float, None] = None
+    #orthogonal: bool = False
+    train_weights_direction: bool = True
     mask: torch.Tensor = None # for masking input lines such as go cue
 
     @property
@@ -25,14 +27,20 @@ class Connection(nn.Module):
     def __init__(self, config, N_from, N_to):
         super().__init__()
 
-        self.config = config
         self.source_name = config.source_name
         self.target_name = config.target_name
 
-        if self.config.rank is None:
-            self.rank = 'full'
-        else:
-            self.rank = self.config.rank
+        assert (config.rank == 'full') or isinstance(config.rank, int)
+        self.rank = config.rank
+
+        assert (config.norm is None) or isinstance(config.norm, float)
+        self.norm = config.norm
+
+        #self.orthogonal = config.orthogonal
+
+        self.train_weights_direction = config.train_weights_direction
+
+        self.config = config
 
         self.connect(N_from, N_to)
 
@@ -40,12 +48,27 @@ class Connection(nn.Module):
         sparse_mask = torch.rand(N_to, N_from) < self.config.p_conn
         self.register_buffer(f'sparse_mask', sparse_mask)
 
-        self.W = nn.Parameter(glorot_gauss_tensor(connectivity=sparse_mask), requires_grad = self.config.train_weights)
+        self.W = nn.Parameter(glorot_gauss_tensor(connectivity=sparse_mask),
+                              requires_grad = self.train_weights_direction)
 
         if self.rank != 'full':
             assert isinstance(self.rank, int)
             import geotorch
             geotorch.low_rank(self, 'W', self.rank)
+
+        if self.norm is not None:
+            assert isinstance(self.norm, float)
+            import geotorch
+            geotorch.sphere(self, 'W', radius = self.norm)
+
+        # TODO handle orthogonal and norm together
+        # right now orthogonal makes the columns have unit norm
+        # if orthogonal and norm are both given, have an extra parameter that handles the lengths
+        # don't set sphere, only orthogonal, and multiply by that extra parameter
+        #if self.orthogonal:
+        #    import geotorch
+        #    geotorch.orthogonal(self, 'W')
+
 
     @property
     def effective_W(self):
@@ -56,3 +79,6 @@ class Connection(nn.Module):
         
     #def __getattr__(self, name):
     #    return getattr(self.config, name)
+
+    def __repr__(self):
+        return str(self.config.__dict__)
