@@ -5,11 +5,17 @@ import scipy.stats
 
 from .reach_profile import extent_curve, speed_curve
 
+def calc_cue_spread(arr: np.ndarray) -> float:
+    return np.max(np.diff(np.sort(arr)))
 
 class CossinUncertaintyTaskWithReachProfiles(Task):
     def __init__(self, dt, tau, T, N_batch, target_kappa=25, stim_noise=0.05, cue_kappas=(5, 50)):
+
+        output_dims = {'hand' : 2,
+                       'uncertainty' : 1}
+
         super().__init__(11,
-                         {'hand' : 2},
+                         output_dims,
                          dt,
                          tau,
                          T,
@@ -32,6 +38,7 @@ class CossinUncertaintyTaskWithReachProfiles(Task):
         params['cue_slice_locations'] = np.sort(np.random.vonmises(mu = target_dir, kappa = cue_kappa, size = self.N_in // 2))
         params['cue_var'] = scipy.stats.circvar(params['cue_slice_locations'])
         params['cue_var_log'] = np.log(params['cue_var'])
+        params['cue_spread'] = calc_cue_spread(params['cue_slice_locations'])
         
         params['idx_trial_start'] = 50
         params['idx_target_on']   = params['idx_trial_start'] + np.random.randint(50, 200)
@@ -76,7 +83,7 @@ class CossinUncertaintyTaskWithReachProfiles(Task):
         else:
             masks_t['hand'] = np.zeros(self.output_dims['hand'])
             
-        outputs_t['uncertainty'] = params['cue_var_log']
+        outputs_t['uncertainty'] = params['cue_spread']
         masks_t['uncertainty'] = 1.
 
         return input_signal, outputs_t, masks_t
