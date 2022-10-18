@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import scipy.stats
 
 import dataclasses
 
@@ -51,7 +50,7 @@ class BatchResult:
         return dfi
 
 
-def run_test_batch(model: MultiRegionRNN, task: Task):
+def run_test_batch(model: MultiRegionRNN, task: Task) -> BatchResult:
     """
     Generate a batch of trials from task and run the model on it
 
@@ -88,7 +87,7 @@ def run_test_batches(n_batches: int,
                      model: MultiRegionRNN,
                      task: Task,
                      end_offset: int = 40,
-                     endpoint_location_fieldname: str = 'hand'):
+                     endpoint_location_fieldname: str = 'hand') -> pd.DataFrame:
     """
     Generate n_batches batches of trials from the task and record model output on them
 
