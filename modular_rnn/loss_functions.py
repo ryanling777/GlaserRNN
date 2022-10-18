@@ -11,9 +11,9 @@ mse = nn.MSELoss()
 
 class MSEOnlyLoss(nn.Module):
     def __init__(self,
-                 excluded_outputs: list[str]):
+                 output_names: list[str]):
         super().__init__()
-        self.excluded_outputs = excluded_outputs
+        self.output_names = output_names
         
     def forward(self,
                 model_outputs: dict[str, Union[np.ndarray, torch.Tensor]],
@@ -21,15 +21,13 @@ class MSEOnlyLoss(nn.Module):
                 masks: dict[str, Union[np.ndarray, torch.Tensor]]):
 
         error = 0.
-        for output_name in target_outputs.keys():
-            if output_name in self.excluded_outputs:
-                continue
+        for output_name in self.output_names:
 
             mask = masks.get(output_name,
-                             np.ones_like(model_outputs[output_name]))
+                             torch.ones(model_outputs[output_name].shape))
             #mask = masks[output_name] if output_name in masks else np.ones_like(model_outputs[output_name])
 
-            error += mse(model_outputs[output_name] * mask, target_outputs[output_name] * mask)
+            error += mse(model_outputs[output_name].as_tensor() * mask, target_outputs[output_name] * mask)
 
         return error
         
