@@ -103,6 +103,8 @@ class MultiRegionRNN(nn.Module):
             #    self.regions[region_name].inputs_at_current_time = torch.zeros(.n_neurons)
             for region in self.regions.values():
                 region.inputs_at_current_time = torch.zeros(1, self.batch_size, region.n_neurons)
+            for output in self.outputs.values():
+                output.values_at_current_time = torch.zeros(1, self.batch_size, output.dim)
                     
             for c in self.region_connections:
                 self.regions[c.target_name].inputs_at_current_time += self.regions[c.source_name].rates[t-1] @ c.effective_W.T
@@ -115,7 +117,9 @@ class MultiRegionRNN(nn.Module):
             # could be faster to do this at the end instead of every time point
             # but if we want to have feedback, then it has to be here
             for c in self.output_connections:
-                self.outputs[c.target_name].values.append(self.regions[c.source_name].rates[t] @ c.effective_W.T)
+                self.outputs[c.target_name].values_at_current_time += self.regions[c.source_name].rates[t] @ c.effective_W.T
+            for output in self.outputs.values():
+                output.values.append(output.values_at_current_time)
             
         return self.outputs, {region.name : region.rates_tensor for region in self.regions.values()}
     
