@@ -40,12 +40,13 @@ class Connection(nn.Module):
 
         self.train_weights_direction = config.train_weights_direction
 
-        self.config = config
+        self.p_conn = config.p_conn
+        self.mask = config.mask
 
         self.connect(N_from, N_to)
 
     def connect(self, N_from, N_to):
-        sparse_mask = torch.rand(N_to, N_from) < self.config.p_conn
+        sparse_mask = torch.rand(N_to, N_from) < self.p_conn
         self.register_buffer(f'sparse_mask', sparse_mask)
 
         self.W = nn.Parameter(glorot_gauss_tensor(connectivity=sparse_mask),
@@ -72,10 +73,10 @@ class Connection(nn.Module):
 
     @property
     def effective_W(self):
-        if self.config.mask is None:
+        if self.mask is None:
             return self.W * self.sparse_mask
         else:
-            return self.W * self.sparse_mask * self.config.mask
+            return self.W * self.sparse_mask * self.mask
         
     #def __getattr__(self, name):
     #    return getattr(self.config, name)
