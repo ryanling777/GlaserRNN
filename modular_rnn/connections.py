@@ -82,4 +82,4 @@ class Connection(nn.Module):
     #    return getattr(self.config, name)
 
     def __repr__(self):
-        return str(self.config.__dict__)
+        return str(self.__dict__)

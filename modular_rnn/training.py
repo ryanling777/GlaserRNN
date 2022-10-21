@@ -50,7 +50,7 @@ def train(
 ):
     """
     Train rnn on task
-    
+
     Parameters
     ----------
     rnn : torch.nn.Module
@@ -75,7 +75,7 @@ def train(
         gradient clipping norm
     pbar : bool, default True
         draw progress bar
-        
+
     Returns
     -------
     (training_loss, regularized_losses) : (list, list)
@@ -86,7 +86,7 @@ def train(
 
     if test_loss_fn is None:
         test_loss_fn = loss_fn
-        
+
     try:
         progress_bar = tqdm(range(training_iters), display=pbar)
     except:
@@ -106,7 +106,7 @@ def train(
 
         optimizer.step()
 
-        training_losses.append(train_loss.detach().item()) 
+        training_losses.append(train_loss.detach().item())
 
-            
+
     return training_losses
