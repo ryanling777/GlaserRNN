@@ -42,7 +42,6 @@ class MultiRegionRNN(nn.Module):
         self.outputs = {}
         for (name, dimensionality) in outputs.items():
             self.outputs[name] = ModelOutput(name, dimensionality)
-        #self.outputs = {output.name : output for output in outputs}
 
         self.region_connections = []
         for conn_config in connection_configs:
@@ -69,9 +68,6 @@ class MultiRegionRNN(nn.Module):
     def create_input_connection(self, conn_config: ConnectionConfig):
         assert conn_config.target_name in self.regions.keys()
         
-        #if conn_config.target_name in self.inputs.keys():
-        #else:
-        
         self.input_connections.append(Connection(conn_config,
                                                  self.input_dim,
                                                  self.regions[conn_config.target_name].n_neurons))
@@ -86,7 +82,7 @@ class MultiRegionRNN(nn.Module):
                                                   self.outputs[conn_config.target_name].dim))
     
     
-    def forward(self, X):
+    def forward(self, X: torch.Tensor):
         self.batch_size = X.size(1)
         for region in self.regions.values():
             region.batch_size = self.batch_size
@@ -99,8 +95,6 @@ class MultiRegionRNN(nn.Module):
             output.reset(self.batch_size)
         
         for t in range(1, X.size(0)):
-            #for region_name in self.regions.keys():
-            #    self.regions[region_name].inputs_at_current_time = torch.zeros(.n_neurons)
             for region in self.regions.values():
                 region.inputs_at_current_time = torch.zeros(1, self.batch_size, region.n_neurons)
             for output in self.outputs.values():
@@ -135,13 +129,13 @@ class MultiRegionRNN(nn.Module):
                     yield p
                 
     @property
-    def device(self):
+    def device(self) -> torch.device:
         return next(self.parameters()).device
 
     @property
-    def dtype(self):
+    def dtype(self) -> torch.dtype:
         return next(self.parameters()).dtype
     
     @property
-    def num_modules(self):
+    def num_modules(self) -> int:
         return len(self.regions)

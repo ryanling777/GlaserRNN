@@ -62,7 +62,7 @@ class RNNModule(nn.Module):
         else:
             init_state = torch.tile(self.sample_random_hidden_state_vector(), (1, self.batch_size, 1))
 
-        # might need self.device
+        # NOTE might need self.device
         self.hidden_states = [init_state]
         self.rates = [self.nonlin(init_state)]
 
@@ -105,15 +105,15 @@ class RNNModule(nn.Module):
             self.bias.requires_grad = False
 
     @property
-    def device(self):
+    def device(self) -> torch.device:
         return next(self.parameters()).device
 
     @property
-    def dtype(self):
+    def dtype(self) -> torch.dtype:
         return next(self.parameters()).dtype
 
     @property
-    def norm_rec(self):
+    def norm_rec(self) -> torch.Tensor:
         return (self.rec_mask * self.W_rec).norm()
 
     def __repr__(self):
@@ -126,14 +126,14 @@ class ModelOutput:
         self.dim = dim
         self.values = None
     
-    def reset(self, batch_size: int):
+    def reset(self, batch_size: int) -> None:
         self.values = [torch.zeros(1, batch_size, self.dim)]
         
-    def as_tensor(self):
+    def as_tensor(self) -> torch.Tensor:
         return torch.stack(self.values, dim = 1).squeeze(dim = 0)
 
     #def __getitem__(self, item):
     #    return self.as_tensor()[item]
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str):
         return getattr(self.as_tensor(), name)

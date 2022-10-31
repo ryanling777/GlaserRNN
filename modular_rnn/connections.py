@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import Union
 
-import numpy as np
 import torch
 import torch.nn as nn
 
@@ -45,7 +44,7 @@ class Connection(nn.Module):
 
         self.connect(N_from, N_to)
 
-    def connect(self, N_from, N_to):
+    def connect(self, N_from: int, N_to: int) -> None:
         sparse_mask = torch.rand(N_to, N_from) < self.p_conn
         self.register_buffer(f'sparse_mask', sparse_mask)
 
@@ -72,7 +71,7 @@ class Connection(nn.Module):
 
 
     @property
-    def effective_W(self):
+    def effective_W(self) -> torch.Tensor:
         if self.mask is None:
             return self.W * self.sparse_mask
         else:
