@@ -56,7 +56,7 @@ class TolerantLoss(nn.Module):
 
         angle_incorrect = torch.abs(model_angle - target_angle) > self.tolerance_in_rad
 
-        error = mse(angle_incorrect.T * dir_mask.T * target_dir_output.T,
-                    angle_incorrect.T * dir_mask.T * model_dir_output.T)
+        error = mse(angle_incorrect * torch.permute(dir_mask, (2, 0, 1)) * torch.permute(target_dir_output, (2, 0, 1)),
+                    angle_incorrect * torch.permute(dir_mask, (2, 0, 1)) * torch.permute(model_dir_output, (2, 0, 1)))
         
         return error
