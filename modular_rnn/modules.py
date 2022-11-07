@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 
 from .utils import glorot_gauss_tensor
+from .low_rank_utils import get_nm_from_W
 
 
 class RNNModule(nn.Module):
@@ -38,14 +39,15 @@ class RNNModule(nn.Module):
             self.noisy = True
             self.noise_amp = dynamics_noise
 
-        self.glorot_gauss_init()
-
         if rec_rank is not None:
-            import geotorch
-            geotorch.low_rank(self, 'W_rec', rec_rank)
+            assert isinstance(rec_rank, int)
             self.rec_rank = rec_rank
+            self.full_rank = False
         else:
             self.rec_rank = 'full'
+            self.full_rank = True
+
+        self.glorot_gauss_init()
 
         # for potentially initializing to the same state in every trial
         init_x = self.sample_random_hidden_state_vector()
@@ -95,14 +97,31 @@ class RNNModule(nn.Module):
 
     def glorot_gauss_init(self) -> None:
         rec_mask = torch.rand(self.n_neurons, self.n_neurons) < self.p_rec
-        self.W_rec = nn.Parameter(glorot_gauss_tensor(connectivity=rec_mask))
         self.register_buffer('rec_mask', rec_mask)
+
+        if self.full_rank:
+            self._W_rec = nn.Parameter(glorot_gauss_tensor(connectivity=rec_mask))
+        else:
+            _n, _m = get_nm_from_W(glorot_gauss_tensor(connectivity=rec_mask),
+                                   self.rec_rank)
+            self.n = nn.Parameter(_n)
+            self.m = nn.Parameter(_m)
 
         if self.bias:
             self.bias = nn.Parameter(glorot_gauss_tensor((1, self.n_neurons)))
         else:
             self.bias = nn.Parameter(torch.zeros((1, self.n_neurons)))
             self.bias.requires_grad = False
+
+    @property
+    def W_rec(self):
+        if self.full_rank:
+            return self._W_rec
+        else:
+            return self.n @ self.m.t()
+
+    def reparametrize_with_svd(self):
+        self.n, self.m = get_nm_from_W(self.W_rec, self.rec_rank)
 
     @property
     def device(self) -> torch.device:

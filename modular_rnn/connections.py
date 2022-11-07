@@ -5,6 +5,8 @@ import torch
 import torch.nn as nn
 
 from .utils import glorot_gauss_tensor
+from .low_rank_utils import get_nm_from_W
+
 
 @dataclass
 class ConnectionConfig:
@@ -31,6 +33,7 @@ class Connection(nn.Module):
 
         assert (config.rank == 'full') or isinstance(config.rank, int)
         self.rank = config.rank
+        self.full_rank = (self.rank == 'full')
 
         assert (config.norm is None) or isinstance(config.norm, float)
         self.norm = config.norm
@@ -48,13 +51,15 @@ class Connection(nn.Module):
         sparse_mask = torch.rand(N_to, N_from) < self.p_conn
         self.register_buffer(f'sparse_mask', sparse_mask)
 
-        self.W = nn.Parameter(glorot_gauss_tensor(connectivity=sparse_mask),
-                              requires_grad = self.train_weights_direction)
-
         if self.rank != 'full':
             assert isinstance(self.rank, int)
-            import geotorch
-            geotorch.low_rank(self, 'W', self.rank)
+            _n, _m = get_nm_from_W(glorot_gauss_tensor(connectivity=sparse_mask),
+                                   self.rank)
+            self.n = nn.Parameter(_n, requires_grad = self.train_weights_direction)
+            self.m = nn.Parameter(_m, requires_grad = self.train_weights_direction)
+        else:
+            self._W = nn.Parameter(glorot_gauss_tensor(connectivity=sparse_mask),
+                                  requires_grad = self.train_weights_direction)
 
         if self.norm is not None:
             assert isinstance(self.norm, float)
@@ -69,6 +74,12 @@ class Connection(nn.Module):
         #    import geotorch
         #    geotorch.orthogonal(self, 'W')
 
+    @property
+    def W(self):
+        if self.full_rank:
+            return self._W
+        else:
+            return self.n @ self.m.t()
 
     @property
     def effective_W(self) -> torch.Tensor:
