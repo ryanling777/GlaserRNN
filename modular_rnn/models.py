@@ -139,3 +139,9 @@ class MultiRegionRNN(nn.Module):
     @property
     def num_modules(self) -> int:
         return len(self.regions)
+
+    def state_dict(self):
+        raise NotImplementedError
+
+    def load_state_dict(self):
+        raise NotImplementedError

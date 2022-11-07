@@ -121,7 +121,7 @@ class Task(ABC):
         """
         pass
 
-    def generate_trial(self, params):
+    def generate_trial(self, params: dict):
         """
         Loop to generate a single trial.
 
