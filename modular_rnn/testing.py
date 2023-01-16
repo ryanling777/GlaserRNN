@@ -3,10 +3,10 @@ import pandas as pd
 
 import dataclasses
 
-from .training import get_batch_of_trials
+from training import get_batch_of_trials
 
-from .models import MultiRegionRNN
-from .tasks.base_task import Task
+from models import MultiRegionRNN
+from tasks.base_task import Task
 
 
 @dataclasses.dataclass

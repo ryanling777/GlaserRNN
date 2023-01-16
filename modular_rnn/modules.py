@@ -3,10 +3,10 @@ from typing import Union
 import torch
 import torch.nn as nn
 
-from .utils import glorot_gauss_tensor
-from .low_rank_utils import get_nm_from_W
+from utils import glorot_gauss_tensor
+from low_rank_utils import get_nm_from_W
 
-
+# n_neurons is the length of the hidden state
 class RNNModule(nn.Module):
     def __init__(self,
                  name: str,
@@ -68,7 +68,7 @@ class RNNModule(nn.Module):
         self.hidden_states = [init_state]
         self.rates = [self.nonlin(init_state)]
 
-
+    # learning step
     def f_step(self) -> None:
 
         x, r = self.hidden_states[-1], self.rates[-1]
@@ -151,8 +151,8 @@ class ModelOutput:
     def as_tensor(self) -> torch.Tensor:
         return torch.stack(self.values, dim = 1).squeeze(dim = 0)
 
-    #def __getitem__(self, item):
-    #    return self.as_tensor()[item]
+    def __getitem__(self, item):
+       return self.as_tensor()[item]
 
     def __getattr__(self, name: str):
         return getattr(self.as_tensor(), name)

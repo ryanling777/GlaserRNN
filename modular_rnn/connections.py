@@ -4,10 +4,10 @@ from typing import Union
 import torch
 import torch.nn as nn
 
-from .utils import glorot_gauss_tensor
-from .low_rank_utils import get_nm_from_W
+from utils import glorot_gauss_tensor
+from low_rank_utils import get_nm_from_W
 
-
+# Defines the connections between nodes/units?
 @dataclass
 class ConnectionConfig:
     source_name: str

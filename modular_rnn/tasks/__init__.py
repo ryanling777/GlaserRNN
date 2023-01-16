@@ -1,2 +1,3 @@
 from .train_tasks import CossinUncertaintyTaskWithReachProfiles
 from .test_tasks import EqualSpacedUncertaintyTaskWithReachProfiles
+from .train_tasks import CenterOut

@@ -11,6 +11,7 @@ speed_gaussian = tfp.distributions.Normal(loc = 29., scale = 12.)
 def speed_curve(x):
     return speed_gaussian.prob(x - 23)
 
+# actual distance because cdf is the integral of the pdf.
 @jit
 def extent_curve(x):
     return speed_gaussian.cdf(x - 23)

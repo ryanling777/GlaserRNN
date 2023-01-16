@@ -3,17 +3,20 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from .models import MultiRegionRNN
-from .tasks.base_task import Task
+from models import MultiRegionRNN
+from tasks.base_task import Task
 
 from tqdm.auto import tqdm
 
+# Gets called by train function below.
 def get_batch_of_trials(task, rnn):
     """
     Get a batch of trials from the task and convert it to a format the RNN can process.
     """
     # get a batch of trials from the task
     batch_inputs, batch_outputs, batch_masks, trial_params = task.get_trial_batch()
+    # get_trial_batch calls batch_generator
+    # batch_generator calls generate_trial_params -> generate_trial
     # get them to PyTorch's preferred shape and put them to the device the model is on
 
     collected_outputs = {output_name : [] for output_name in task.output_dims.keys()}
@@ -21,6 +24,8 @@ def get_batch_of_trials(task, rnn):
 
     batch_inputs = torch.tensor(np.array(batch_inputs), dtype = torch.float).transpose(1, 0).to(rnn.device)
 
+
+    # Not quite sure what this is for? Why do we have to organise it ths way?
     for trial_outputs in batch_outputs:
         for (output_name, output_value) in trial_outputs.items():
             collected_outputs[output_name].append(output_value)
@@ -87,6 +92,7 @@ def train(
     if test_loss_fn is None:
         test_loss_fn = loss_fn
 
+    # Set up the training bar to track progress.
     try:
         progress_bar = tqdm(range(training_iters), display=pbar)
     except:
@@ -94,10 +100,20 @@ def train(
 
     training_losses = []
     for epoch in progress_bar:
+
+        # zero the gradient
         optimizer.zero_grad()
 
+        # runs batch generator
         batch_inputs, batch_outputs, batch_masks, batch_trial_params = get_batch_of_trials(task, rnn)
         model_outputs, rates = rnn(batch_inputs)
+
+        #print(batch_outputs)
+
+        #print(type(model_outputs)) dictionary
+        #print(model_outputs['hand'][0:])
+        #difference = batch_outputs['hand'][0:]-model_outputs['hand'][0:]
+        #print(difference)
 
         train_loss = loss_fn(model_outputs, batch_outputs, batch_masks)
         train_loss.backward()

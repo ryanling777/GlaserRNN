@@ -4,7 +4,7 @@ import numpy as np
 import torch.nn as nn
 import torch
 
-from .modules import ModelOutput
+from modules import ModelOutput
 
 
 mse = nn.MSELoss()
@@ -19,16 +19,18 @@ class MSEOnlyLoss(nn.Module):
                 model_outputs: dict[str, Union[np.ndarray, torch.Tensor]],
                 target_outputs: dict[str, np.ndarray],
                 masks: dict[str, Union[np.ndarray, torch.Tensor]]):
-
+        
         error = 0.
         for output_name in self.output_names:
-
+            
             mask = masks.get(output_name,
                              torch.ones(model_outputs[output_name].shape))
+            #print(mask)
             #mask = masks[output_name] if output_name in masks else np.ones_like(model_outputs[output_name])
 
             error += mse(model_outputs[output_name].as_tensor() * mask, target_outputs[output_name] * mask)
-
+        #print( "error is ")
+        #print(error)
         return error
         
         

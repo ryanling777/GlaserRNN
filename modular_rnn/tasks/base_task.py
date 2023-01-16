@@ -140,21 +140,27 @@ class Task(ABC):
             - trial_masks : dict[str, (*ndarray(dtype=bool, shape=(*:attr:`N_steps`, :attr:`N_out` *))*)]
                 True during steps where the network should train to match :data:`y`, False where the network should ignore :data:`y` during training.
         """
+
+        # sets up an array, no. rows = number of time steps and number of inputs
         x_data = np.zeros([self.N_steps, self.N_in])
         trial_outputs = {output_name : np.zeros((self.N_steps, N_out))
                          for (output_name, N_out) in self.output_dims.items()}
         trial_masks = {output_name : np.zeros((self.N_steps, N_out))
                        for (output_name, N_out) in self.output_dims.items()}
 
+        # For each time point in a trial, generate input and expected output
         for t in range(self.N_steps):
+            # inputs the actual time
             x_t, outputs_t, masks_t = self.trial_function(t * self.dt, params)
 
+            # update x data with the current input
             x_data[t, :] = x_t
 
+            # updating the output and trial mask
             for output_name in self.output_dims.keys():
                 trial_outputs[output_name][t, :] = outputs_t[output_name]
                 trial_masks[output_name][t, :] = masks_t[output_name]
-
+        #print(trial_outputs)
         return x_data, trial_outputs, trial_masks
 
     def batch_generator(self):

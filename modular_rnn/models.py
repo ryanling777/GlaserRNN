@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 
-from .connections import ConnectionConfig, Connection
-from .modules import RNNModule, ModelOutput
+from connections import ConnectionConfig, Connection
+from modules import RNNModule, ModelOutput
 
 class MultiRegionRNN(nn.Module):
     def __init__(self,
@@ -33,10 +33,14 @@ class MultiRegionRNN(nn.Module):
             'use_constant_init_state' : False,
             'train_recurrent_weights' : True,
         }
+        
+        
+        # defines connections between different brain regions
+    
         for (name, params) in regions_config.items():
             for (param_name, param_val) in default_region_init_params.items():
                 params.setdefault(param_name, param_val)
-
+            #creates RNN Module
             self.regions[name] = RNNModule(name, **params)
             
         self.outputs = {}
@@ -81,7 +85,7 @@ class MultiRegionRNN(nn.Module):
                                                   self.regions[conn_config.source_name].n_neurons,
                                                   self.outputs[conn_config.target_name].dim))
     
-    
+    #actually generates the output values of the module.
     def forward(self, X: torch.Tensor):
         self.batch_size = X.size(1)
         for region in self.regions.values():
