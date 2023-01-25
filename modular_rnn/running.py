@@ -100,13 +100,14 @@ plt.savefig('Loss.png')
 # function in pyal called restrict_to_interval to cut out from trial start to end
 # every row is a trial
 test_df = run_test_batches(10, rnn, task)
-test_df = restrict_to_interval(test_df)
+test_df.to_pickle('/home/rnl18/modular_rnn/modular_rnn/SpeedAnalysis/Test_OutputUnrestricted.pkl')
+test_df = restrict_to_interval(test_df,"idx_trial_start","idx_trial_end",0,0,None,None,None,False, True, 'hand_model_output')
 #ax = sns.scatterplot(x = 'target_dir', y = 'endpoint_location', data = test_df, palette = 'tab10')
 #ax.set_aspect('equal')
 #plt.show()
 #
 #print(test_df.head(5))
-test_df.to_csv('/home/rnl18/modular_rnn/modular_rnn/SpeedAnalysis/Test_Output.csv')
+test_df.to_pickle('/home/rnl18/modular_rnn/modular_rnn/SpeedAnalysis/Test_Output.pkl')
 plt.savefig('Accuracy.png')
 
 
