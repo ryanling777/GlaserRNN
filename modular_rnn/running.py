@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-
+import pyarrow as pa
 import torch
 import torch.nn as nn
 import torch.nn.functional as F 
@@ -108,6 +108,7 @@ test_df = restrict_to_interval(test_df,"idx_trial_start","idx_trial_end",0,0,Non
 #
 #print(test_df.head(5))
 test_df.to_pickle('/home/rnl18/modular_rnn/modular_rnn/SpeedAnalysis/Test_Output.pkl')
+test_df.to_hdf('/home/rnl18/modular_rnn/modular_rnn/SpeedAnalysis/Test_Output.h5', key = 'df')
 plt.savefig('Accuracy.png')
 
 
