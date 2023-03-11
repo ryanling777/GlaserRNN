@@ -151,6 +151,7 @@ class Task(ABC):
         # For each time point in a trial, generate input and expected output
         for t in range(self.N_steps):
             # inputs the actual time
+            # Seems to multiply t by a factor of dt which in this case is 5
             x_t, outputs_t, masks_t = self.trial_function(t * self.dt, params)
 
             # update x data with the current input

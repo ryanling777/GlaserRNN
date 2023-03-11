@@ -4,6 +4,87 @@ import numpy as np
 
 from .reach_profile import extent_curve, speed_curve
 
+class CenterOutTest(Task):
+    def __init__(self, dt, tau, T, N_batch, N_targets=8, stim_noise=0.05):
+        
+        # define output_dims - the hand will hold cosx and siny, max euclidean distance is 1.
+        output_dims = {'hand' : 2}
+
+        # 3 columns for input - cosx, siny and cue.
+        super().__init__(3, output_dims, dt, tau, T, N_batch)
+        self.N_targets = N_targets
+        self.stim_noise = stim_noise 
+        
+
+
+    def generate_trial_params(self, batch, trial):
+        tid = np.random.randint(0, self.N_targets)
+        target_dir = (2*np.pi/self.N_targets) * tid
+
+        params = dict()
+        params['target_id'] = tid
+        params['target_dir'] = target_dir
+        params['target_cos'] = np.cos(target_dir)
+        params['target_sin'] = np.sin(target_dir)
+        params['target_cossin'] = np.array([params['target_cos'], params['target_sin']])
+
+        # to be randomised later
+        params['idx_trial_start'] = 50
+        params['idx_target_on'] = 100
+        params['idx_go_cue'] = 500
+        params['idx_trial_end'] = 900
+
+
+        params['stim_noise'] = self.stim_noise * np.random.randn(self.T, self.N_in)
+
+        return params
+
+    def trial_function(self, time, params):
+        target_cossin = params['target_cossin']
+
+        #start with just noise
+        #input_signal = self.stim_noise * np.random.randn(self.N_in)
+        input_signal = params['stim_noise'][time, :]
+
+        # add 0 to third column representing go cue
+        if time >= params['idx_target_on']:
+            input_signal = np.append(target_cossin, np.zeros(1))
+
+         # go signal should be on after the go cue, last signal is non-zero for go cue
+        if time >= params['idx_go_cue']:
+            input_signal += np.append(np.zeros(2), 1)
+
+        output_signal = {}
+
+        
+        if time < params['idx_go_cue']:
+            output_signal['hand'] = np.zeros(self.output_dims['hand'])
+        else:
+            shifted_time = time - params['idx_go_cue']
+
+            # position is the extent projected to the x and y axes
+            extent_at_t = extent_curve(shifted_time)
+            # stores speed at the shifted time.
+            speed_at_t = speed_curve(shifted_time)
+            
+            output_signal['hand'] = target_cossin * extent_at_t
+        
+        
+        #if time < params['idx_go_cue']:
+        #   output_signal = np.zeros(self.N_out)
+        #else:
+        #   output_signal = target_cossin
+
+        masks_t = {}
+        if params['idx_trial_start'] < time < params['idx_trial_end']:
+            masks_t['hand'] = np.ones(self.output_dims['hand'])
+        else:
+            masks_t['hand'] = np.zeros(self.output_dims['hand'])
+
+        return input_signal, output_signal, masks_t
+
+
+
 class EqualSpacedUncertaintyTaskWithReachProfiles(Task):
     def __init__(self, dt, tau, N_batch, stim_noise=0.05, cue_kappa=5):
         super().__init__(11,

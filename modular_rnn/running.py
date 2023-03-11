@@ -18,19 +18,22 @@ from models import MultiRegionRNN
 from loss_functions import TolerantLoss, MSEOnlyLoss
 from tasks import CossinUncertaintyTaskWithReachProfiles
 from tasks import CenterOut
+from tasks.test_tasks import CenterOutTest 
 from training import train
+
 
 # For Testing
 
 from testing import run_test_batches
 
 # Set parameters
-tau = 100
+tau = 10
 
 # Timestep of the simulation
 dt = 5
 
 alpha = dt/tau
+# Tau is the time constant of each neuron's firing rate
 
 tolerance = 5
 
@@ -52,6 +55,7 @@ loss_fn = MSEOnlyLoss(['hand'])
 
 # Create Task
 task = CenterOut(dt, tau, L, batch_size)
+testtask = CenterOutTest(dt, tau, L, batch_size)
 #task = CossinUncertaintyTaskWithReachProfiles(dt, tau, L, batch_size)
 
 # dictionary defining the modules in the RNN
@@ -59,7 +63,7 @@ task = CenterOut(dt, tau, L, batch_size)
 
 regions_config_Dict = {
     'motor_cortex' : {
-        'n_neurons' : 50,
+        'n_neurons' : 400,
         'alpha' : alpha,
         'p_rec' : 1., 
         'dynamics_noise' : noise,
@@ -99,7 +103,7 @@ plt.savefig('Loss.png')
 # Testing the model 
 # function in pyal called restrict_to_interval to cut out from trial start to end
 # every row is a trial
-test_df = run_test_batches(10, rnn, task)
+test_df = run_test_batches(10, rnn, testtask)
 test_df.to_pickle('/home/rnl18/modular_rnn/modular_rnn/SpeedAnalysis/Test_OutputUnrestricted.pkl')
 test_df = restrict_to_interval(test_df,"idx_trial_start","idx_trial_end",0,0,None,None,None,False, True, 'hand_model_output')
 #ax = sns.scatterplot(x = 'target_dir', y = 'endpoint_location', data = test_df, palette = 'tab10')
@@ -107,8 +111,9 @@ test_df = restrict_to_interval(test_df,"idx_trial_start","idx_trial_end",0,0,Non
 #plt.show()
 #
 #print(test_df.head(5))
-test_df.to_pickle('/home/rnl18/modular_rnn/modular_rnn/SpeedAnalysis/Test_Output.pkl')
-test_df.to_hdf('/home/rnl18/modular_rnn/modular_rnn/SpeedAnalysis/Test_Output.h5', key = 'df')
+test_df.to_csv('/home/rnl18/modular_rnn/modular_rnn/Test_Output.csv')
+test_df.to_pickle('/home/rnl18/modular_rnn/modular_rnn/Test_Output.pkl')
+test_df.to_hdf('/home/rnl18/modular_rnn/modular_rnn/Test_Output2.h5', key = 'df')
 plt.savefig('Accuracy.png')
 
 
@@ -117,7 +122,7 @@ fig, ax = plt.subplots()
 # arr is matrix for each iteration
 for arr in test_df.hand_model_output.values[:100]:
     ax.scatter(*arr.T, alpha = 0.1, color = 'tab:blue')
-    print(*arr.T)
+    #print(*arr.T)
     
 ax.set_title('model output')
 ax.set_xlabel('x')

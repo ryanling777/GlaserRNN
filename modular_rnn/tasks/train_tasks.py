@@ -33,10 +33,15 @@ class CenterOut(Task):
         params['target_cossin'] = np.array([params['target_cos'], params['target_sin']])
 
         # to be randomised later
-        params['idx_trial_start'] = 100
-        params['idx_target_on'] = 200
-        params['idx_go_cue'] = 500
-        params['idx_trial_end'] = 900
+        params['idx_trial_start'] = 50
+        params['idx_target_on'] = params['idx_trial_start'] + np.random.randint(50, 200)
+        #params['idx_go_cue'] = 500
+        #params['idx_trial_end'] = 900
+        params['idx_go_cue']      = params['idx_target_on'] + np.random.randint(200, 500)
+        params['idx_trial_end']   = params['idx_go_cue'] + 450
+
+
+
 
         params['stim_noise'] = self.stim_noise * np.random.randn(self.T, self.N_in)
 
